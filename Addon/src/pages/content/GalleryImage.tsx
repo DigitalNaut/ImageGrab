@@ -70,17 +70,20 @@ export function GalleryImage({
     <div className="group/card pointer-events-auto flex w-10 cursor-pointer flex-col gap-1 overflow-clip rounded-sm group-hover:w-20 group-hover:drop-shadow-sm">
       <div className="group/image relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-sm group-hover:h-20 group-hover:w-20 group-hover/card:bg-white">
         <img ref={image} src={src} data-src={src} />
+
         <div className="absolute inset-0 hidden h-20 w-20 flex-col text-xs group-hover/image:flex">
           <button
-            className="relative flex w-full flex-1 grow justify-end px-1 py-0.5 text-white"
+            className="invisible relative flex h-full w-full flex-1 grow justify-end px-1 py-0.5 text-white group-hover/image:visible"
             onMouseOver={() => {
               const firstMatch = imageOverHandler(image);
               if (firstMatch) onHover(firstMatch);
             }}
             onMouseLeave={onLeave}
             onClick={() => imageClickHandler(image)}
+            title="Open in new tab"
           >
             <img
+              className="h-3 w-3 bg-white text-slate-900"
               src="https://raw.githubusercontent.com/DigitalNaut/ImageGrab/main/Addon/src/assets/img/external-link.svg"
               width={12}
               height={12}
@@ -89,7 +92,7 @@ export function GalleryImage({
           <a
             href={src}
             download
-            className="w-full rounded-sm px-1 py-0.5 text-center text-slate-900"
+            className="w-full rounded-sm px-1 py-0.5 text-center text-slate-900 hover:bg-slate-900 hover:text-white"
             rel="noopener noreferrer"
             target="_blank"
             title="Save image"
@@ -99,7 +102,7 @@ export function GalleryImage({
         </div>
       </div>
       <div className="hidden w-full flex-col gap-1 group-hover:flex">
-        <div className="rounded-sm bg-white/20 px-1 py-0.5 text-center text-xs text-slate-900">
+        <div className="rounded-sm bg-white/20 px-1 py-0.5 text-center text-xs text-slate-900 group-hover/card:bg-white">
           {`${image.current?.naturalWidth || "?"}x${image.current?.naturalHeight || "?"}`}
         </div>
       </div>
