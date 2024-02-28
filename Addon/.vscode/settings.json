@@ -1,0 +1,15 @@
+{
+  "cSpell.words": [
+    "crxjs",
+    "newtab",
+    "Srcs",
+    "tailwindcss",
+    "typecheck",
+    "webextension"
+  ],
+  "tailwindCSS.experimental.classRegex": [
+    ["Style \\=([^;]*);", "'([^']*)'"],
+    ["Style \\=([^;]*);", "\"([^\"]*)\""],
+    ["Style \\=([^;]*);", "\\`([^\\`]*)\\`"]
+  ]
+}
