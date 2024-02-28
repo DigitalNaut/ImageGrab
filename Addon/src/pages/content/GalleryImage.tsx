@@ -1,4 +1,4 @@
-import { useRef, type MouseEventHandler } from "react";
+import { useRef, type RefObject } from "react";
 
 /**
  * Extracts the given image's src attribute and returns all images with the same src
@@ -27,10 +27,10 @@ const matchImagesSrc = (target: HTMLImageElement) => {
 /**
  * Finds all images with the same src and adds the imageMatchStyle class
  */
-const imageOverHandler = (img: HTMLImageElement | null) => {
-  if (!img) return;
+const imageOverHandler = (image: RefObject<HTMLImageElement>) => {
+  if (!image.current) return;
 
-  const matches = matchImagesSrc(img);
+  const matches = matchImagesSrc(image.current);
   if (matches.length === 0) return;
 
   const [first] = matches;
@@ -47,8 +47,10 @@ const imageOverHandler = (img: HTMLImageElement | null) => {
 /**
  * Opens the given image's src in a new tab
  */
-const imageClickHandler: MouseEventHandler<HTMLImageElement> = (event) => {
-  window.open(event.currentTarget.src);
+const imageClickHandler = (image: RefObject<HTMLImageElement>) => {
+  if (!image.current) return;
+
+  window.open(image.current.src);
 };
 
 export type ImageInfo = Pick<HTMLImageElement, "src">;
@@ -67,27 +69,27 @@ export function GalleryImage({
   return (
     <div className="group/card pointer-events-auto flex w-10 cursor-pointer flex-col gap-1 overflow-clip rounded-sm group-hover:w-20 group-hover:drop-shadow-sm">
       <div className="group/image relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-sm group-hover:h-20 group-hover:w-20 group-hover/card:bg-white">
-        <img
-          ref={image}
-          src={src}
-          data-src={src}
-          onMouseLeave={onLeave}
-          onClick={imageClickHandler}
-        />
-        <div className="absolute inset-0 hidden flex-col text-xs group-hover/image:block">
+        <img ref={image} src={src} data-src={src} />
+        <div className="absolute inset-0 hidden h-20 w-20 flex-col text-xs group-hover/image:flex">
           <button
-            className="w-full flex-1 bg-red-500 px-1 py-0.5 text-white"
+            className="relative flex w-full flex-1 grow justify-end px-1 py-0.5 text-white"
             onMouseOver={() => {
-              const firstMatch = imageOverHandler(image.current);
+              const firstMatch = imageOverHandler(image);
               if (firstMatch) onHover(firstMatch);
             }}
+            onMouseLeave={onLeave}
+            onClick={() => imageClickHandler(image)}
           >
-            <img src="https://github.com/DigitalNaut/ImageGrab/blob/main/Addon/src/assets/img/external-link.svg?raw=true" />
+            <img
+              src="https://raw.githubusercontent.com/DigitalNaut/ImageGrab/main/Addon/src/assets/img/external-link.svg"
+              width={12}
+              height={12}
+            />
           </button>
           <a
             href={src}
-            download={src}
-            className="w-full rounded-sm bg-blue-400 px-1 py-0.5 text-center text-slate-900"
+            download
+            className="w-full rounded-sm px-1 py-0.5 text-center text-slate-900"
             rel="noopener noreferrer"
             target="_blank"
             title="Save image"

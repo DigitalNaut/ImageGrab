@@ -86,7 +86,7 @@ export function ImageHighlightSection() {
       {createPortal(
         <div
           ref={imageIndicator}
-          className={`absolute z-[999] hidden animate-pulse rounded-sm border-4 border-dashed border-yellow-400 bg-yellow-400/10 bg-[url(https://github.com/DigitalNaut/ImageGrab/blob/main/Addon/src/assets/img/indicator.png?raw=true)]`}
+          className={`absolute z-[999] hidden animate-pulse rounded-sm border-4 border-dashed border-yellow-400 bg-yellow-400/10 bg-opacity-20 bg-[url(https://raw.githubusercontent.com/DigitalNaut/ImageGrab/main/Addon/src/assets/img/indicator.png)]`}
         ></div>,
         document.body
       )}
