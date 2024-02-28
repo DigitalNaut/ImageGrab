@@ -6,20 +6,22 @@ const DEFAULT_OPTIONS = {
 
 export default function useMutationObservable(
   targetEl: HTMLElement,
-  cb: MutationCallback,
+  callback: MutationCallback,
   options = DEFAULT_OPTIONS
 ) {
   const [observer, setObserver] = useState<null | MutationObserver>(null);
 
   useEffect(() => {
-    const obs = new MutationObserver(cb);
+    const obs = new MutationObserver(callback);
     setObserver(obs);
-  }, [cb, options, setObserver]);
+  }, [callback, options, setObserver]);
 
   useEffect(() => {
     if (!observer) return;
+
     const { config } = options;
     observer.observe(targetEl, config);
+
     return () => {
       if (observer) {
         observer.disconnect();

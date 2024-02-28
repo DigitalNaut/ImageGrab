@@ -31,7 +31,7 @@ export function ImageHighlightContainerElm({
   return (
     <div
       className={twMerge(
-        "group fixed bottom-0 left-0 z-[999] flex w-min max-w-sm flex-col gap-2 rounded-sm bg-amber-200/90 p-2 text-black hover:min-w-fit hover:max-w-full hover:bg-amber-400",
+        "group fixed bottom-0 left-0 z-[9999] flex w-min max-w-sm flex-col gap-2 rounded-sm bg-amber-200/90 p-2 text-black hover:min-w-fit hover:max-w-full hover:bg-amber-400",
         rounded && "rounded-full px-8 py-4",
         full && "hover:border-t-8 hover:border-amber-200 hover:p-4"
       )}
