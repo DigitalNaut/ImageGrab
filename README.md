@@ -1,0 +1,1 @@
+# Image Grab Web Extension
