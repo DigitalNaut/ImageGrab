@@ -1,20 +1,31 @@
 import { useEffect, useState } from "react";
 
-const DEFAULT_OPTIONS = {
-  config: { attributes: true, childList: true, subtree: true },
+type Options = {
+  config: MutationObserverInit;
+};
+
+const DEFAULT_OPTIONS: Options = {
+  config: {
+    attributes: true,
+    childList: true,
+    subtree: true,
+  },
 };
 
 export default function useMutationObservable(
   targetEl: HTMLElement,
   callback: MutationCallback,
-  options = DEFAULT_OPTIONS
+  options = DEFAULT_OPTIONS,
+  cb: (ev: "created" | "started" | "disconnected") => void
 ) {
   const [observer, setObserver] = useState<null | MutationObserver>(null);
 
   useEffect(() => {
     const obs = new MutationObserver(callback);
     setObserver(obs);
-  }, [callback, options, setObserver]);
+
+    cb("created");
+  }, [callback, cb, options, setObserver]);
 
   useEffect(() => {
     if (!observer) return;
@@ -22,10 +33,12 @@ export default function useMutationObservable(
     const { config } = options;
     observer.observe(targetEl, config);
 
+    cb("started");
+
     return () => {
-      if (observer) {
-        observer.disconnect();
-      }
+      if (!observer) return;
+      observer?.disconnect();
+      cb("disconnected");
     };
-  }, [observer, targetEl, options]);
+  }, [observer, cb, targetEl, options]);
 }

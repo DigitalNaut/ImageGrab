@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useReducer, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 
+import { singularIf } from "@src/util/interface";
 import { ImageCard as Card } from "./GalleryImage";
 import {
   ImageCountElm as Count,
@@ -8,90 +9,173 @@ import {
   ImageHighlightContainerElm as Container,
   ScrollableYElm,
 } from "./Elements";
-import { singularIf } from "../../util/interface";
 import useMutationObservable from "@src/hooks/useMutationObserver";
+
+const urlNeedle = /url\((.+?)\)/;
+
+function getDocImageElementsSrcs() {
+  const elements = document.body.querySelectorAll("img[src]");
+  const imageSet = new Set<string>();
+
+  for (const element of elements) {
+    const src = element.getAttribute("src");
+    if (src) imageSet.add(src);
+  }
+
+  return Array.from(imageSet);
+}
+
+function getDocSvgElementsSrcs() {
+  const elements = document.body.querySelectorAll("svg");
+  const imageSet = new Set<string>();
+
+  for (const element of elements) {
+    const svgData = new XMLSerializer().serializeToString(element);
+    const svgDataBase64 = btoa(unescape(encodeURIComponent(svgData)));
+    const svgDataUrl = `data:image/svg+xml;charset=utf-8;base64,${svgDataBase64}`;
+
+    imageSet.add(svgDataUrl);
+  }
+
+  return Array.from(imageSet);
+}
+
+function getAttributeElementsSrcs() {
+  const elements = document.body.querySelectorAll("div, span, a, i");
+  const imageSet = new Set<string>();
+
+  for (const element of elements) {
+    const styleMatches = element.getAttribute("style")?.match(urlNeedle);
+    if (styleMatches) styleMatches.slice(1).forEach((url) => imageSet.add(url));
+
+    const bgMatches = window
+      .getComputedStyle(element)
+      .backgroundImage.match(urlNeedle);
+    if (bgMatches) bgMatches.slice(1).forEach((url) => imageSet.add(url));
+
+    const bgAfterMatches = window
+      .getComputedStyle(element, ":after")
+      .backgroundImage.match(urlNeedle);
+    if (bgAfterMatches)
+      bgAfterMatches.slice(1).forEach((url) => imageSet.add(url));
+
+    const bgBeforeMatches = window
+      .getComputedStyle(element, ":before")
+      .backgroundImage.match(urlNeedle);
+    if (bgBeforeMatches)
+      bgBeforeMatches.slice(1).forEach((url) => imageSet.add(url));
+  }
+
+  return Array.from(imageSet);
+}
 
 /**
  * Scans the page for all images and returns their srcs
  * @returns An array of unique image srcs
  */
 function getDocImageSrcs() {
-  const images = document.body.getElementsByTagName("img");
-  const divs = document.body.getElementsByTagName("div");
+  const elements = document.body.querySelectorAll("img, div, span, a, i, svg");
 
   const imageSet = new Set<string>();
 
-  let imageCount = 0;
-  for (const image of images) {
-    const src = image.getAttribute("src");
-    if (src) {
-      imageSet.add(src);
-      imageCount++;
-    }
-  }
+  for (const element of elements) {
+    if (element.tagName === "svg") {
+      const svgData = new XMLSerializer().serializeToString(element);
+      const svgDataBase64 = btoa(unescape(encodeURIComponent(svgData)));
+      const svgDataUrl = `data:image/svg+xml;charset=utf-8;base64,${svgDataBase64}`;
 
-  let divCount = 0;
-  let attrCount = 0;
-  for (const div of divs) {
-    const styleAttr = div.getAttribute("style");
-
-    const styleMatches = styleAttr?.match(/url\((.+?)\)/);
-    if (styleMatches) {
-      styleMatches.slice(1).forEach((url) => {
-        imageSet.add(url);
-        divCount++;
-      });
+      imageSet.add(svgDataUrl);
       continue;
     }
 
-    const bgMatches = window
-      .getComputedStyle(div)
-      .backgroundImage.match(/url\("(.+?)"\)/);
+    const src = element.getAttribute("src");
+    if (src) imageSet.add(src);
 
-    if (bgMatches) {
-      bgMatches.slice(1).forEach((url) => {
-        imageSet.add(url);
-        attrCount++;
-      });
-    }
+    const styleMatches = element.getAttribute("style")?.match(urlNeedle);
+    if (styleMatches) styleMatches.slice(1).forEach((url) => imageSet.add(url));
+
+    const bgMatches = window
+      .getComputedStyle(element)
+      .backgroundImage.match(urlNeedle);
+    if (bgMatches) bgMatches.slice(1).forEach((url) => imageSet.add(url));
+
+    const bgAfterMatches = window
+      .getComputedStyle(element, ":after")
+      .backgroundImage.match(urlNeedle);
+    if (bgAfterMatches)
+      bgAfterMatches.slice(1).forEach((url) => imageSet.add(url));
+
+    const bgBeforeMatches = window
+      .getComputedStyle(element, ":before")
+      .backgroundImage.match(urlNeedle);
+    if (bgBeforeMatches)
+      bgBeforeMatches.slice(1).forEach((url) => imageSet.add(url));
   }
 
-  // Log the image total, then the image tags count, then the
-  console.log(
-    `Found ${imageSet.size} images: ${imageCount} images, ${divCount}/${attrCount} div counts`
-  );
-
   return Array.from(imageSet);
+}
+
+export const config = {
+  config: {
+    attributes: true,
+    childList: true,
+    subtree: true,
+    attributeFilter: ["src", "style", "background-image"],
+  },
+};
+export const defaultStats = {
+  creations: 0,
+  starts: 0,
+  disconnects: 0,
+};
+
+export function statsReducer(
+  state: typeof defaultStats,
+  action: "created" | "started" | "disconnected"
+) {
+  switch (action) {
+    case "created":
+      return {
+        ...state,
+        creations: state.creations + 1,
+      };
+    case "started":
+      return {
+        ...state,
+        starts: state.starts + 1,
+      };
+    case "disconnected":
+      return {
+        ...state,
+        disconnects: state.disconnects + 1,
+      };
+  }
 }
 
 export function ImageHighlightSection() {
   const imageIndicator = useRef<HTMLDivElement>(null);
   const [docImages, setDocImages] = useState<null | string[]>();
+  const [stats, dispatchStats] = useReducer(statsReducer, defaultStats);
 
   useEffect(() => {
     setDocImages(getDocImageSrcs());
   }, []);
 
-  useMutationObservable(document.body, () => {
-    setDocImages(getDocImageSrcs());
-  });
+  const callback = useCallback(
+    () => setDocImages(getDocImageSrcs()),
+    [setDocImages]
+  );
+
+  useMutationObservable(document.body, callback, config, dispatchStats);
 
   if (docImages == null) return <Container>⏳</Container>;
 
   const { length: imageCount } = docImages;
 
-  if (imageCount === 1 && document.contentType !== "text/html")
+  if (document.contentType !== "text/html" && imageCount === 1)
     return (
       <Container>
         <span className="text-3xl">🖼</span>
-      </Container>
-    );
-
-  if (imageCount === 0)
-    return (
-      <Container rounded>
-        <span>📷❓</span>
-        <Count>No images</Count>
       </Container>
     );
 
@@ -106,10 +190,14 @@ export function ImageHighlightSection() {
     imageIndicator.current.style.height = `${rect.height}px`;
 
     imageIndicator.current.classList.remove("hidden");
+
+    console.log("Hovered", img);
   };
 
   const handleImageLeave = () => {
     imageIndicator.current?.classList.add("hidden");
+
+    console.log("Left");
   };
 
   return (
@@ -117,10 +205,18 @@ export function ImageHighlightSection() {
       {createPortal(
         <div
           ref={imageIndicator}
-          className="pointer-events-none absolute z-[9999] hidden animate-ping rounded-sm border-4 border-dashed border-yellow-400 bg-white/10"
+          className="pointer-events-none absolute z-[9999] hidden animate-ping rounded-md border-4 border-dotted border-yellow-400 bg-white/10"
         ></div>,
         document.body
       )}
+      <div>
+        <span>Stats</span>
+        <ul>
+          <li>Creations: {stats.creations}</li>
+          <li>Starts: {stats.starts}</li>
+          <li>Disconnects: {stats.disconnects}</li>
+        </ul>
+      </div>
       <ScrollableYElm>
         <Gallery>
           {docImages.map((src) => (
@@ -134,12 +230,13 @@ export function ImageHighlightSection() {
         </Gallery>
       </ScrollableYElm>
       <Count>
-        {imageCount > 0 && (
+        {imageCount > 0 ? (
           <>
             Found {imageCount} image{singularIf(imageCount === 1)}
           </>
+        ) : (
+          <>No images found</>
         )}
-        {imageCount === 0 && <>No images found</>}
       </Count>
     </Container>
   );
