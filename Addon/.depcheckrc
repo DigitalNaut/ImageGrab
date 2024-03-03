@@ -1,0 +1,2 @@
+ignores: ["eslint", "babel-*", "test", "dist", "node_modules", "vite.config.ts"]
+skip-missing: true

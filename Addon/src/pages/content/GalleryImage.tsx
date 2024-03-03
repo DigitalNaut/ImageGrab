@@ -1,111 +1,71 @@
-import { useRef, type RefObject } from "react";
+import { ImageContentType, getImgContentType } from "@src/util/interface";
+import { useRef, useState, useEffect } from "react";
+
+const surroundingQuotesNeedle = /^(["']).*?(\1)$/;
 
 /**
- * Extracts the given image's src attribute and returns all elements with the same image src
- * @param target
+ * Image card component for gallery images in the content page
+ *
+ * Note: The img elements of this component get a data-src attribute that's
+ * used for distinguishing these from the host page images so that the gallery
+ * doesn't indicate its own images on hover
+ *
+ * @param param0
  * @returns
  */
-const matchImagesSrc = (target: HTMLImageElement) => {
-  const src = target.getAttribute("data-src");
-
-  if (src?.length === 0) {
-    throw new Error(
-      JSON.stringify({
-        message: "Image data-img not found for image:",
-        target,
-      })
-    );
-  }
-
-  // Find all images with the same src and exclude the given image
-  const imgMatches = document.body.querySelectorAll(`img[src="${src}"]`);
-  const divStyleMatches = document.body.querySelectorAll(
-    `div[style*="background-image:url('${src}')"]`
-  );
-
-  console.log(
-    `Matched ${imgMatches.length} images and ${divStyleMatches.length} divs. Total: ${imgMatches.length + divStyleMatches.length}`
-  );
-
-  const imageMatches = Array.from(imgMatches).filter(
-    (match) => match !== target
-  );
-
-  const divMatchesArray = Array.from(divStyleMatches).filter(
-    (match) => match !== target
-  );
-
-  return [...imageMatches, ...divMatchesArray];
-};
-
-/**
- * Finds all images with the same src and adds the imageMatchStyle class
- */
-const imageOverHandler = (image: RefObject<HTMLImageElement>) => {
-  if (!image.current) return;
-
-  const matches = matchImagesSrc(image.current);
-  if (matches.length === 0) return;
-
-  const [first] = matches;
-
-  first.scrollIntoView({
-    behavior: "smooth",
-    block: "center",
-    inline: "center",
-  });
-
-  return first;
-};
-
-/**
- * Opens the given image's src in a new tab
- */
-const imageClickHandler = (image: RefObject<HTMLImageElement>) => {
-  if (!image.current) return;
-
-  window.open(image.current.src);
-};
-
-export type ImageInfo = Pick<HTMLImageElement, "src">;
-
 export function ImageCard({
   src,
   onHover,
   onLeave,
 }: {
   src: string;
-  onHover: (image: Element) => void;
+  onHover: () => void;
   onLeave: () => void;
 }) {
+  const [contentType, setContentType] = useState<ImageContentType>();
   const image = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    async function fetchImageInfo() {
+      if (!image.current) return;
+
+      setContentType({ type: "loading", size: "loading" });
+      const info = await getImgContentType(image.current.src);
+      setContentType(info);
+    }
+
+    fetchImageInfo();
+  }, [image]);
+
+  const { naturalHeight, naturalWidth } = image.current || {};
 
   return (
     <div
-      className="group/card pointer-events-auto flex w-10 cursor-pointer flex-col gap-1 overflow-clip rounded-sm group-hover:w-20 group-hover:drop-shadow-sm"
-      onMouseOver={() => {
-        const firstMatch = imageOverHandler(image);
-        if (firstMatch) onHover(firstMatch);
-      }}
+      className="ig-group/card ig-pointer-events-auto ig-flex ig-w-10 ig-min-w-10 ig-cursor-pointer ig-flex-col ig-gap-1 ig-text-clip ig-rounded-sm group-hover/container:ig-w-20 group-hover/container:ig-drop-shadow-sm"
+      onMouseEnter={() => image.current && onHover()}
       onMouseLeave={onLeave}
     >
-      <div className="group/image relative flex h-10 w-10 items-center justify-center overflow-hidden rounded-sm group-hover:h-20 group-hover:w-20 group-hover/card:bg-white">
-        <img ref={image} src={src} data-src={src} />
+      <div className="ig-group/image ig-relative ig-flex ig-size-10 ig-items-center ig-justify-center ig-overflow-hidden ig-rounded-sm ig-outline ig-outline-1 -ig-outline-offset-1 ig-outline-amber-200 group-hover/container:ig-size-20 group-hover/card:ig-bg-white group-hover/container:ig-outline-0">
+        <img
+          ref={image}
+          src={src.replace(surroundingQuotesNeedle, "")}
+          data-img-src={true}
+        />
 
-        <div className="absolute right-0 top-0 hidden h-20 w-20 flex-col group-hover/image:flex">
-          <button
-            className="group/indicator relative flex h-full w-full flex-1 grow justify-end p-1"
-            onClick={() => imageClickHandler(image)}
-            title="Open in new tab"
-          >
-            <span className="h-fit w-fit rounded-full bg-slate-900/20 px-1 text-sm text-white group-hover/indicator:bg-slate-900/80">
-              👁
-            </span>
-          </button>
+        <div className="ig-absolute ig-right-0 ig-top-0 ig-hidden ig-size-20 ig-flex-col group-hover/image:ig-flex">
           <a
-            className="w-full rounded-sm bg-slate-900/20 px-1 py-0.5 text-center text-sm text-white hover:bg-slate-900/80"
+            href={image.current?.src || ""}
+            className="ig-group/indicator ig-relative ig-flex ig-size-full ig-flex-1 ig-grow ig-justify-end ig-p-1"
             rel="noopener noreferrer"
             target="_blank"
+            title="Open in new tab"
+          >
+            <span className="ig-size-fit ig-rounded-full ig-bg-slate-900/20 ig-px-1 ig-text-sm ig-text-white group-hover/indicator:ig-bg-slate-900/80">
+              👁
+            </span>
+          </a>
+          <a
+            className="ig-w-full ig-rounded-b-sm ig-bg-slate-900/20 ig-px-1 ig-py-0.5 ig-text-center ig-text-sm ig-text-white hover:ig-bg-slate-900/80"
             title="Save image"
             href={src}
             download
@@ -114,13 +74,23 @@ export function ImageCard({
           </a>
         </div>
       </div>
-      <div
-        className="hidden w-full flex-col gap-1 overflow-clip group-hover:flex"
-        title={src}
-      >
-        <span className="w-full rounded-sm bg-white/20 px-1 py-0.5 text-center text-xs text-slate-900 group-hover/card:bg-white">
-          {`${image.current?.naturalWidth || "?"}x${image.current?.naturalHeight || "?"}`}
-        </span>
+      <div className="ig-hidden ig-w-full ig-gap-1 ig-text-clip group-hover/container:ig-block">
+        <div className="ig-flex ig-flex-col ig-overflow-hidden ig-rounded-sm ig-bg-white/20 ig-px-1 ig-py-0.5 ig-text-center ig-text-xs ig-text-slate-900 group-hover/card:ig-bg-white">
+          <div
+            title={`Dimensions ${naturalWidth || "?"}x${naturalHeight || "?"}`}
+          >{`${naturalWidth || "?"}x${naturalHeight || "?"}`}</div>
+          <div
+            className="ig-max-w-full ig-text-ellipsis ig-text-nowrap"
+            title={`Type: ${contentType?.type || "unknown"}\n\n${src}`}
+          >
+            {contentType?.type || "unknown"}
+          </div>
+          <div title={`Size: ${contentType?.size || "unknown"}`}>
+            {contentType?.size != null
+              ? `${contentType.size} bytes`
+              : "unknown"}
+          </div>
+        </div>
       </div>
     </div>
   );

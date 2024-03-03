@@ -1,7 +1,15 @@
 import { useEffect, useState } from "react";
 
-const DEFAULT_OPTIONS = {
-  config: { attributes: true, childList: true, subtree: true },
+type Options = {
+  config: MutationObserverInit;
+};
+
+const DEFAULT_OPTIONS: Options = {
+  config: {
+    attributes: true,
+    childList: true,
+    subtree: true,
+  },
 };
 
 export default function useMutationObservable(
@@ -23,9 +31,8 @@ export default function useMutationObservable(
     observer.observe(targetEl, config);
 
     return () => {
-      if (observer) {
-        observer.disconnect();
-      }
+      if (!observer) return;
+      observer?.disconnect();
     };
   }, [observer, targetEl, options]);
 }

@@ -1,22 +1,14 @@
-import logo from '@assets/img/logo.svg';
-import '@pages/newtab/Newtab.css';
+import logo from "@assets/img/logo.svg";
 
 export default function Newtab(): JSX.Element {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/pages/newtab/Newtab.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React!
-        </a>
+    <div className="ig-text-center">
+      <header className="ig-flex ig-min-h-screen ig-flex-col ig-items-center ig-justify-center ig-bg-[#282c34] ig-text-white">
+        <img
+          src={logo}
+          className="ig-pointer-events-none"
+          alt="logo"
+        />
       </header>
     </div>
   );

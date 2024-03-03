@@ -1,6 +1,5 @@
 import { createRoot } from 'react-dom/client';
 import Panel from '@pages/panel/Panel';
-import '@pages/panel/index.css';
 import '@assets/styles/tailwind.css';
 
 function init() {

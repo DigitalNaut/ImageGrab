@@ -1,0 +1,24 @@
+Pending patchwork:
+------------------------------------
+eslint.config.js:
+  Problem: ESLint doesn't follow its own rules.
+  Description: ESLint is ignoring the 'ignores' key and parsing everything inside the 'dist' folder. 
+  Workaround: Added the subdirectory to the PNPM script instead as a cli argument.
+  To do: Remove the cli argument and let ESLint manage everything from the config file. The final result should be: `lint: "eslint ."`
+
+vite.config.ts timestamp files:
+  Problem: Some files are being generated and being left behind.
+  Description: The files are created when parsing the Vite config and polluting the base directory if not watched.
+  Workaround: None yet, but planning on adding a del-cli command to get rid of them.
+  To do: Implement the workaround and wait for the fixes to arrive.
+  See: https://github.com/vitejs/vite/issues/13267
+
+
+Pending research:
+------------------------------------
+Shadow DOM:
+  Problem: Some SVG elements have a shadow DOM that holds the image data that can't be readily accessed.
+  Description: Can't node traverse an element with a shadow DOM, so extra steps are necessary to get the image data elements from the inline SVG.
+  Workaround: None yet.
+  To do: Implement the workaround and wait for the fixes to arrive.
+  See: https://stackoverflow.com/questions/47526424/access-elements-inside-the-shadow-root

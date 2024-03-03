@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Image Tests</title>
+  </head>
+  <body>
+    <style>
+      body {
+        background-color: darkslategrey;
+        color: white;
+        font-family: sans-serif;
+      }
+
+      section > div {
+        display: flex;
+        gap: 1.5rem;
+        justify-items: center;
+      }
+
+      .test {
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+      }
+
+      .test > *:first-child {
+        border: 1px solid black;
+        min-width: 64px;
+        min-height: 64px;
+        max-width: 256px;
+        max-height: 256px;
+      }
+
+      .test > *:nth-child(2) {
+        font-size: 12px;
+        color: white;
+        background-color: black;
+        text-wrap: wrap;
+        min-height: max-content;
+      }
+    </style>
+    <main>
+      <h1>Image Display Test Cases</h1>
+      <span
+        >Manual tests for figuring out which elements can display images in the
+        browser.</span
+      >
+
+      <section>
+        <h2>Common elements that can display images</h2>
+
+        <div>
+          <div class="test">
+            <img src="https://picsum.photos/id/237/200/300" />
+            <p>Case: `img` with `src`</p>
+          </div>
+
+          <div class="test">
+            <picture>
+              <source
+                srcset="https://picsum.photos/id/237/200/300"
+              />
+              <img
+                src="https://picsum.photos/id/237/200/300"
+              />
+            </picture>
+            <p>Case: `picture` with `srcset`</p>
+          </div>
+
+          <div>
+            <div class="test">
+              <svg>
+                <image href="https://picsum.photos/id/237/200/300" />
+              </svg>
+              <p>Case: `svg` with `image` tag and `href`</p>
+            </div>
+            <div class="test">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                height="24"
+                viewBox="0 0 16 16"
+                version="1.1"
+                width="24"
+              >
+                <path
+                  d="M8 0c4.42 0 8 3.58 8 8a8.013 8.013 0 0 1-5.45 7.59c-.4.08-.55-.17-.55-.38 0-.27.01-1.13.01-2.2 0-.75-.25-1.23-.54-1.48 1.78-.2 3.65-.88 3.65-3.95 0-.88-.31-1.59-.82-2.15.08-.2.36-1.02-.08-2.12 0 0-.67-.22-2.2.82-.64-.18-1.32-.27-2-.27-.68 0-1.36.09-2 .27-1.53-1.03-2.2-.82-2.2-.82-.44 1.1-.16 1.92-.08 2.12-.51.56-.82 1.28-.82 2.15 0 3.06 1.86 3.75 3.64 3.95-.23.2-.44.55-.51 1.07-.46.21-1.61.55-2.33-.66-.15-.24-.6-.83-1.23-.82-.67.01-.27.38.01.53.34.19.73.9.82 1.13.16.45.68 1.31 2.69.94 0 .67.01 1.3.01 1.49 0 .21-.15.45-.55.38A7.995 7.995 0 0 1 0 8c0-4.42 3.58-8 8-8Z"
+                />
+              </svg>
+              <p>Case: `svg` with inline data</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Other elements</h2>
+        <div>
+          <div class="test">
+            <object data="https://www.w3schools.com/html/pic_trulli.jpg"></object>
+            <p>Case: `object` with `data` url</p>
+          </div>
+
+          <div class="test">
+            <embed src="https://www.w3schools.com/html/pic_trulli.jpg"></embed>
+            <p>Case: `embed` with `src` url</p>
+          </div>
+
+          <div class="test">
+            <svg class="icon">
+              <use xlink:href="#share">
+                <symbol id="share" viewBox="0 0 572.987 572.987"><path d="M286.499 377.804c-50.427 0-91.304-40.877-91.304-91.305 0-50.426 40.877-91.308 91.304-91.308 50.424 0 91.3 40.882 91.3 91.308 0 50.428-40.876 91.305-91.3 91.305zm286.486-60.085V252.52l-9.208-3.008-69.8-22.788-18.626-44.97 35.801-75.752-46.115-46.107-8.634 4.384-65.467 33.25L345.975 78.9 317.71.007h-65.199l-3.004 9.216-22.788 69.802-44.95 18.623-75.778-35.799-46.097 46.107 4.382 8.632 33.244 65.488-18.612 44.941L0 255.27v65.211l9.218 3.004 69.802 22.792 18.622 44.957-35.793 75.76 46.09 46.117 8.646-4.393 65.47-33.24 44.958 18.623 28.251 78.887h65.204l3.012-9.21 22.792-69.8 44.961-18.622 75.758 35.806 46.112-46.12-4.382-8.64-33.249-65.458 18.625-44.967 78.888-28.257"></path>
+                </symbol>
+              </use>
+            </svg>
+            <p>Case: `svg` with `use`</p>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h2>Elements that support the `background-image` property</h2>
+        <div>
+          <div class="test">
+            <span
+              style="background-image: url(https://picsum.photos/id/237/200/300)"
+            ></span>
+            <p>Case: `span` with `background-image` url</p>
+          </div>
+
+          <div class="test">
+            <p
+              style="background-image: url(https://picsum.photos/id/237/200/300)"
+            ></p>
+            <p>Case: `p` with `background-image` url</p>
+          </div>
+
+          <div class="test">
+            <i
+              style="background-image: url(https://picsum.photos/id/237/200/300)"
+            ></i>
+            <p>Case: `i` with `background-image` url</p>
+          </div>
+
+          <div class="test">
+            <span style="background-image: url(https://picsum.photos/id/237/200/300)"></span>
+            <p>Case: `span` with `background-image` url</p>
+          </div>
+
+          <div class="test">
+            <a style="background-image: url(https://picsum.photos/id/237/200/300)"></a>
+            <p>Case: `a` with `background-image` url</p>
+          </div>
+
+          <div class="test">
+            <b style="background-image: url(https://picsum.photos/id/237/200/300)"></b>
+            <p>Case: `b` with `background-image` url</p>
+          </div>
+
+          <div class="test">
+            <canvas style="background-image: url(https://picsum.photos/id/237/200/300)"></canvas>
+            <p>Case: `canvas` with `background-image` url</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
